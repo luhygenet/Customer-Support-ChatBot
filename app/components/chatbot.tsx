@@ -1,6 +1,6 @@
 "use client";
 export const dynamic = "force-dynamic";
-export const fetchCache = "force-no-store"
+export const fetchCache = "force-no-store";
 
 import React, { useState } from "react";
 import { Card } from "@/app/components/ui/card";
@@ -65,58 +65,45 @@ export default function Chatbot() {
   const handleSendMessage = async () => {
     if (!userInput.trim()) return;
 
-    // Add user message
-    const userMessage: Message = {
-      type: "user",
-      text: userInput,
-    };
-    setMessages([...messages, userMessage]);
-
-    // Simulate system response
-    setInputValue("");
+    const userMessage: Message = { type: "user", text: userInput };
+    setMessages((prev) => [...prev, userMessage]);
     setIsLoading(true);
 
     try {
-      const res = await fetch("/api/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query: userInput }),
-      });
+      // Call the FastAPI backend
+      const res = await fetch(
+        `http://127.0.0.1:8000/query?text=${encodeURIComponent(userInput)}`,
+      );
 
-      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(`Backend responded with status ${res.status}`);
+      }
+
+      const data: { answer: string; reasoning: string[] } = await res.json();
 
       const botMessage: Message = {
         type: "bot",
         text: data.answer,
-        reasoning: data.reasoning,
+        reasoning: data.reasoning || [],
       };
 
       setMessages((prev) => [...prev, botMessage]);
     } catch (err) {
-      console.log(err);
+      console.error("Error sending message:", err);
       setMessages((prev) => [
         ...prev,
         {
           type: "bot",
-          text: "Something went wrong with the bot trying to reply",
+          text: "Something went wrong while trying to get a response from the bot.",
+          reasoning: [],
         },
       ]);
     } finally {
       setIsLoading(false);
+      setInputValue(""); // Clear input after sending
     }
-    // setTimeout(() => {
-    //   const randomResponse =
-    //     sampleResponses[Math.floor(Math.random() * sampleResponses.length)];
-    //   const systemMessage: Message = {
-    //     id: `msg-${Date.now() + 1}`,
-    //     type: "system",
-    //     response: randomResponse.response,
-    //     reasoning: randomResponse.reasoning,
-    //   };
-    //   setMessages((prev) => [...prev, systemMessage]);
-    //   setIsLoading(false);
-    // }, 800);
   };
+
   const lastMessage = messages[messages.length - 1];
   return (
     <div className="h-full flex flex-col bg-gradient-to-br from-background to-background/80 p-8">
@@ -255,3 +242,35 @@ export default function Chatbot() {
     </div>
   );
 }
+
+
+
+// try {
+//       const res = await fetch("/api/chat", {
+//         method: "POST",
+//         headers: { "Content-Type": "application/json" },
+//         body: JSON.stringify({ query: userInput }),
+//       });
+
+//       const data = await res.json();
+
+//       const botMessage: Message = {
+//         type: "bot",
+//         text: data.answer,
+//         reasoning: data.reasoning,
+//       };
+
+//       setMessages((prev) => [...prev, botMessage]);
+//     } catch (err) {
+//       console.log(err);
+//       setMessages((prev) => [
+//         ...prev,
+//         {
+//           type: "bot",
+//           text: "Something went wrong with the bot trying to reply",
+//         },
+//       ]);
+//     } finally {
+//       setIsLoading(false);
+//     }
+    
