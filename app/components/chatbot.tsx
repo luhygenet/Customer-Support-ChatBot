@@ -211,7 +211,7 @@ export default function Chatbot() {
           <>
             <ScrollArea className="max-h-[45vh] w-full px-1">{null}</ScrollArea>
 
-            <div className="relative sticky bottom-0 pb-2 bg-gradient-to-t from-background to-background/60">
+            <div className="relative sticky bottom-0 pb-3 pt-4 bg-gradient-to-t from-background to-transparent">
               <Input
                 placeholder="Ask a customer service question..."
                 value={userInput}
@@ -224,7 +224,7 @@ export default function Chatbot() {
                 type="button"
                 onClick={handleSendMessage}
                 disabled={isLoading || !userInput.trim()}
-                className="absolute right-2 top-1/2 -translate-y-1/2 p-3 rounded-full text-[#7A06FF] hover:bg-[#f4edff] border border-transparent transition-colors disabled:opacity-50"
+                className="absolute right-3 top-1/2 -translate-y-[45%] p-3 rounded-full text-[#7A06FF] hover:bg-[#f4edff] border border-transparent transition-colors disabled:opacity-50"
                 aria-label="Send message"
               >
                 <svg
