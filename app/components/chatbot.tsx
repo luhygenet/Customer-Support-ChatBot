@@ -2,9 +2,8 @@
 export const dynamic = "force-dynamic";
 export const fetchCache = "force-no-store"
 
-import React, { useState } from "react";
-import { Card } from "@/app/components/ui/card";
-import { Button } from "@/app/components/ui/button";
+import React, { useMemo, useState } from "react";
+import Image from "next/image";
 import { Input } from "@/app/components/ui/input";
 import { ScrollArea } from "@/app/components/ui/scroll-area";
 
@@ -25,6 +24,13 @@ export default function Chatbot() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [userInput, setInputValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+
+  const greeting = useMemo(() => {
+    const hour = new Date().getHours();
+    if (hour < 12) return "Good Morning";
+    if (hour < 18) return "Good Afternoon";
+    return "Good Evening";
+  }, []);
 
   const sampleResponses = [
     {
@@ -65,14 +71,12 @@ export default function Chatbot() {
   const handleSendMessage = async () => {
     if (!userInput.trim()) return;
 
-    // Add user message
     const userMessage: Message = {
       type: "user",
       text: userInput,
     };
     setMessages([...messages, userMessage]);
 
-    // Simulate system response
     setInputValue("");
     setIsLoading(true);
 
@@ -104,152 +108,120 @@ export default function Chatbot() {
     } finally {
       setIsLoading(false);
     }
-    // setTimeout(() => {
-    //   const randomResponse =
-    //     sampleResponses[Math.floor(Math.random() * sampleResponses.length)];
-    //   const systemMessage: Message = {
-    //     id: `msg-${Date.now() + 1}`,
-    //     type: "system",
-    //     response: randomResponse.response,
-    //     reasoning: randomResponse.reasoning,
-    //   };
-    //   setMessages((prev) => [...prev, systemMessage]);
-    //   setIsLoading(false);
-    // }, 800);
   };
-  const lastMessage = messages[messages.length - 1];
+
   return (
-    <div className="h-full flex flex-col bg-gradient-to-br from-background to-background/80 p-8">
-      <div className="mb-6">
-        <h2 className="text-3xl font-bold text-primary mb-2">
-          Customer Support Bot
+    <div className="h-full flex flex-col items-center bg-gradient-to-br from-background to-background/80 p-8">
+      {/* Greeting Section */}
+      <div className="text-center flex flex-col items-center gap-1 mb-4">
+        <Image src="/chat.png" alt="Logo" width={90} height={90} />
+
+        {/* Greeting */}
+        <h2 className="text-3xl md:text-4xl font-extrabold text-primary">
+          {greeting}
         </h2>
-        <p className="text-muted-foreground">
-          Ask questions about orders, returns, policies, and more
+
+        {/* Main prompt */}
+        <p className="text-3xl md:text-4xl font-semibold text-[#7A06FF] mt-1">
+          How Can I Assist You Today?
         </p>
+
+
       </div>
 
-      <div className="flex-1 grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Chat Interface */}
-        <div className="lg:col-span-2 flex flex-col">
-          <Card className="flex-1 flex flex-col bg-card border-border shadow-md">
-            <ScrollArea className="flex-1 p-6">
-              <div className="space-y-4">
-                {messages.length === 0 ? (
-                  <div className="h-full flex items-center justify-center text-center">
-                    <div>
-                      <p className="text-muted-foreground text-lg mb-4">
-                        Start a conversation by asking a customer service
-                        question
-                      </p>
-                      <div className="grid grid-cols-1 gap-2 max-w-xs">
-                        {sampleResponses.map((sample, idx) => (
-                          <button
-                            key={idx}
-                            onClick={() => {
-                              setInputValue(sample.query);
-                            }}
-                            className="text-sm text-accent hover:text-accent/80 text-left p-3 rounded border border-border hover:border-accent transition-all"
-                          >
-                            "{sample.query}"
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  messages.map((msg, i) => (
-                    <div key={i} style={{ marginBottom: "0.75rem" }}>
-                      <strong>{msg.type === "user" ? "You" : "Bot"}:</strong>{" "}
-                      {msg.text}
-                      {msg.type === "bot" && msg.reasoning?.length ? (
-                        <details style={{ marginTop: "0.25rem" }}>
-                          <summary>Reasoning</summary>
-                          <ul>
-                            {msg.reasoning.map((r, idx) => (
-                              <li key={idx}>{r}</li>
-                            ))}
-                          </ul>
-                        </details>
-                      ) : null}
-                    </div>
-                  ))
-                )}
-                {isLoading && (
-                  <div className="flex justify-start">
-                    <div className="bg-secondary text-secondary-foreground p-4 rounded-lg border border-border">
-                      <div className="flex gap-2">
-                        <div className="w-2 h-2 bg-secondary-foreground rounded-full animate-bounce"></div>
-                        <div className="w-2 h-2 bg-secondary-foreground rounded-full animate-bounce delay-100"></div>
-                        <div className="w-2 h-2 bg-secondary-foreground rounded-full animate-bounce delay-200"></div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </ScrollArea>
-
-            <div className="p-6 border-t border-border">
-              <div className="flex gap-2">
-                <Input
-                  placeholder="Ask a customer service question..."
-                  value={userInput}
-                  onChange={(e) => setInputValue(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
-                  disabled={isLoading}
-                  className="flex-1 bg-input text-foreground border-border"
-                />
-                <Button
-                  onClick={handleSendMessage}
-                  disabled={isLoading || !userInput.trim()}
-                  className="bg-accent text-accent-foreground hover:bg-accent/90"
-                >
-                  Send
-                </Button>
-              </div>
+      {/* Chat Area */}
+      <div className="w-full max-w-3xl flex flex-col gap-6 flex-1">
+        <ScrollArea className="max-h-[45vh] w-full px-1">
+          {messages.length === 0 ? (
+            <div className="text-center text-muted-foreground py-6">
+              Start by asking a question or tap a suggestion below.
             </div>
-          </Card>
-        </div>
-
-        {/* Reasoning Panel */}
-        <div className="flex flex-col">
-          <Card className="flex-1 bg-card border-border shadow-md overflow-hidden flex flex-col">
-            <div className="p-6 border-b border-border bg-secondary/10">
-              <h3 className="font-semibold text-primary">
-                Reasoning / Explanation
-              </h3>
-              <p className="text-xs text-muted-foreground mt-1">
-                System decision logic
-              </p>
-            </div>
-
-            <ScrollArea className="flex-1 p-6">
-              {messages.length === 0 ||
-              lastMessage.type !== "bot" ||
-              !lastMessage.reasoning ? (
-                <div className="text-center text-muted-foreground text-sm">
-                  <p>Send a message to see the reasoning process</p>
+          ) : (
+            <div className="space-y-4">
+              {messages.map((msg, i) => (
+                <div key={i} className="flex w-full">
+                  <div
+                    className={`max-w-[75%] px-4 py-3 rounded-2xl text-sm shadow-sm ${
+                      msg.type === "user"
+                        ? "ml-auto bg-[#f4edff] text-[#0f172a]"
+                        : "mr-auto bg-white text-[#0f172a] border border-[#eef0f5]"
+                    }`}
+                  >
+                    <p className="font-semibold mb-1">
+                      {msg.type === "user" ? "You" : "Bot"}
+                    </p>
+                    <p className="leading-relaxed">{msg.text}</p>
+                    {msg.type === "bot" && msg.reasoning?.length ? (
+                      <details className="mt-2 text-[13px] text-muted-foreground">
+                        <summary className="cursor-pointer">Reasoning</summary>
+                        <ul className="list-disc ml-5 space-y-1">
+                          {msg.reasoning.map((r, idx) => (
+                            <li key={idx}>{r}</li>
+                          ))}
+                        </ul>
+                      </details>
+                    ) : null}
+                  </div>
                 </div>
-              ) : (
-                <div className="space-y-3">
-                  <h4 className="font-semibold text-sm text-primary mb-4">
-                    Applied Rules & Logic:
-                  </h4>
-                  {lastMessage.reasoning?.map((rule, idx) => (
-                    <div
-                      key={idx}
-                      className="flex gap-3 pb-3 border-b border-border last:border-0"
-                    >
-                      <div className="flex-shrink-0 w-6 h-6 rounded-full bg-accent text-accent-foreground flex items-center justify-center text-xs font-bold">
-                        {idx + 1}
-                      </div>
-                      <p className="text-sm text-foreground flex-1">{rule}</p>
-                    </div>
-                  ))}
+              ))}
+              {isLoading && (
+                <div className="flex w-full">
+                  <div className="mr-auto px-4 py-3 rounded-2xl bg-white border border-[#eef0f5] text-sm text-muted-foreground shadow-sm flex gap-2 items-center">
+                    <span className="w-2 h-2 bg-[#7A06FF] rounded-full animate-bounce" />
+                    <span className="w-2 h-2 bg-[#7A06FF] rounded-full animate-bounce delay-100" />
+                    <span className="w-2 h-2 bg-[#7A06FF] rounded-full animate-bounce delay-200" />
+                  </div>
                 </div>
               )}
-            </ScrollArea>
-          </Card>
+            </div>
+          )}
+        </ScrollArea>
+
+        <div className="h-px w-full bg-[#eef0f5]" />
+
+        <div className="relative">
+          <Input
+            placeholder="Ask a customer service question..."
+            value={userInput}
+            onChange={(e) => setInputValue(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
+            disabled={isLoading}
+            className="w-full h-14 pr-14 rounded-full border border-[#e7e9f3] bg-white shadow-sm text-base"
+          />
+          <button
+            type="button"
+            onClick={handleSendMessage}
+            disabled={isLoading || !userInput.trim()}
+            className="absolute right-2 top-1/2 -translate-y-1/2 p-3 rounded-full text-[#7A06FF] hover:bg-[#f4edff] border border-transparent transition-colors disabled:opacity-50"
+            aria-label="Send message"
+          >
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden
+            >
+              <line x1="22" y1="2" x2="11" y2="13" />
+              <polygon points="22 2 15 22 11 13 2 9 22 2" />
+            </svg>
+          </button>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          {sampleResponses.map((sample, idx) => (
+            <button
+              key={idx}
+              onClick={() => setInputValue(sample.query)}
+              className="w-full text-left px-4 py-3 rounded-xl border border-[#e7e9f3] bg-white shadow-xs text-sm md:text-base font-medium text-foreground hover:border-[#7A06FF] hover:shadow-sm transition"
+            >
+              {sample.query}
+            </button>
+          ))}
         </div>
       </div>
     </div>

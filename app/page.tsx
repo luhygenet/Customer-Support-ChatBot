@@ -1,31 +1,48 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Card } from '@/app/components/ui/card';
-import { Button } from '@/app/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/app/components/ui/tabs';
+import React, { useMemo, useState } from 'react';
+import Image from 'next/image';
 import Chatbot from '@/app/components/chatbot';
 import About from '@/app/components/about';
-import SystemArchitecture from '@/app/components/system-architecture';
-import KnowledgeBase from '@/app/components/knowledge-base';
+// Removed extra sections to match requested UI
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState('chatbot');
 
+  const icons = useMemo(
+    () => ({
+      plus: (
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1f2937" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+          <line x1="12" y1="5" x2="12" y2="19" />
+          <line x1="5" y1="12" x2="19" y2="12" />
+        </svg>
+      ),
+      info: (
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1f2937" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+          <circle cx="12" cy="12" r="9" />
+          <line x1="12" y1="16" x2="12" y2="12" />
+          <line x1="12" y1="8" x2="12.01" y2="8" />
+        </svg>
+      ),
+    }),
+    [],
+  );
+
   const navigationItems = [
-    { id: 'chatbot', label: 'Chatbot', icon: '💬' },
-    { id: 'about', label: 'About', icon: 'ℹ️' },
-    { id: 'architecture', label: 'System Architecture', icon: '🏗️' },
-    { id: 'knowledge', label: 'Knowledge Base', icon: '📚' },
+    { id: 'chatbot', label: 'New Chat', icon: icons.plus },
+    { id: 'about', label: 'About', icon: icons.info },
   ];
 
   return (
     <div className="min-h-screen flex bg-background">
       {/* Sidebar Navigation */}
-      <aside className="w-64 bg-sidebar text-sidebar-foreground flex flex-col border-r border-sidebar-border shadow-lg">
-        <div className="p-6 border-b border-sidebar-border">
-          <h1 className="text-2xl font-bold text-accent">AI Chatbot</h1>
-          <p className="text-xs text-sidebar-foreground/70 mt-1">Customer Service Agent</p>
+      <aside className="w-64 bg-[#eef3fb] text-sidebar-foreground flex flex-col shadow-md">
+        <div className="p-6 border-b border-[#d1d5dc] flex items-center gap-3">
+          <Image src="/chat.png" alt="Logo" width={36} height={36} />
+          <div>
+            <h1 className="text-xl font-bold text-accent">ChatBot</h1>
+            <p className="text-xs text-sidebar-foreground/70 mt-1">Customer Service Agent</p>
+          </div>
         </div>
 
         <nav className="flex-1 overflow-y-auto p-4">
@@ -34,13 +51,15 @@ export default function Dashboard() {
               <button
                 key={item.id}
                 onClick={() => setActiveTab(item.id)}
-                className={`w-full text-left px-4 py-3 rounded-lg transition-all duration-200 ${
+                className={`w-full flex items-center gap-3 text-left px-4 py-3 rounded-lg transition-colors duration-150 ${
                   activeTab === item.id
-                    ? 'bg-gray-500 foreground font-semibold'
-                    : 'text-sidebar-foreground hover:bg-sidebar-border/50 '
+                    ? 'bg-[#e6edf8] text-[#0f172a] font-semibold'
+                    : 'text-[#0f172a] hover:bg-[#dfe7f7] hover:text-[#0c1224]'
                 }`}
               >
-                <span className="mr-3">{item.icon}</span>
+                <span className="flex-shrink-0" aria-hidden>
+                  {item.icon}
+                </span>
                 {item.label}
               </button>
             ))}
@@ -59,8 +78,6 @@ export default function Dashboard() {
         <div className="h-full">
           {activeTab === 'chatbot' && <Chatbot />}
           {activeTab === 'about' && <About />}
-          {activeTab === 'architecture' && <SystemArchitecture />}
-          {activeTab === 'knowledge' && <KnowledgeBase />}
         </div>
       </main>
     </div>
