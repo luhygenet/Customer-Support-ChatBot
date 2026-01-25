@@ -34,7 +34,7 @@ export default function Dashboard() {
   ];
 
   return (
-    <div className="min-h-screen flex bg-background">
+    <div className="h-screen flex bg-background">
       {/* Sidebar Navigation */}
       <aside className="w-64 bg-[#eef3fb] text-sidebar-foreground flex flex-col shadow-md">
         <div className="p-6 border-b border-[#d1d5dc] flex items-center gap-3">
@@ -54,7 +54,7 @@ export default function Dashboard() {
                 className={`w-full flex items-center gap-3 text-left px-4 py-3 rounded-lg transition-colors duration-150 ${
                   activeTab === item.id
                     ? 'bg-[#e6edf8] text-[#0f172a] font-semibold'
-                    : 'text-[#0f172a] hover:bg-[#dfe7f7] hover:text-[#0c1224]'
+                    : 'text-[#0f172a] hover:bg-[#e6edf8] hover:text-[#0f172a] active:bg-[#e6edf8] active:text-[#0f172a]'
                 }`}
               >
                 <span className="flex-shrink-0" aria-hidden>
@@ -66,7 +66,7 @@ export default function Dashboard() {
           </div>
         </nav>
 
-        <div className="p-4 border-t border-sidebar-border">
+        <div className="p-4 border-t border-[#d1d5dc]">
           <p className="text-xs text-sidebar-foreground/60 text-center">
             Machine Intelligence Project
           </p>
@@ -74,8 +74,8 @@ export default function Dashboard() {
       </aside>
 
       {/* Main Content Area */}
-      <main className="flex-1 overflow-auto">
-        <div className="h-full">
+      <main className="flex-1 overflow-hidden">
+        <div className="h-full overflow-auto">
           {activeTab === 'chatbot' && <Chatbot />}
           {activeTab === 'about' && <About />}
         </div>

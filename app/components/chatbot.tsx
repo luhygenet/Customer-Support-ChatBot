@@ -24,6 +24,7 @@ export default function Chatbot() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [userInput, setInputValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const hasMessages = messages.length > 0;
 
   const greeting = useMemo(() => {
     const hour = new Date().getHours();
@@ -111,32 +112,28 @@ export default function Chatbot() {
   };
 
   return (
-    <div className="h-full flex flex-col items-center bg-gradient-to-br from-background to-background/80 p-8">
+    <div
+      className={`min-h-screen flex flex-col items-center bg-gradient-to-br from-background to-background/80 p-8 ${
+        hasMessages ? "justify-between border border-[#d1d5dc] shadow-md" : "justify-center"
+      }`}
+    >
       {/* Greeting Section */}
-      <div className="text-center flex flex-col items-center gap-1 mb-4">
-        <Image src="/chat.png" alt="Logo" width={90} height={90} />
-
-        {/* Greeting */}
-        <h2 className="text-3xl md:text-4xl font-extrabold text-primary">
-          {greeting}
-        </h2>
-
-        {/* Main prompt */}
-        <p className="text-3xl md:text-4xl font-semibold text-[#7A06FF] mt-1">
-          How Can I Assist You Today?
-        </p>
-
-
-      </div>
+      {!hasMessages && (
+        <div className="text-center flex flex-col items-center gap-2 mb-6 -mt-6">
+          <h2 className="text-3xl md:text-4xl font-extrabold text-primary">{greeting}</h2>
+          <p className="text-3xl md:text-4xl font-semibold mt-1">
+            <span className="text-primary">How Can I </span>
+            <span className="text-[#7A06FF]">Assist You Today?</span>
+          </p>
+        </div>
+      )}
 
       {/* Chat Area */}
-      <div className="w-full max-w-3xl flex flex-col gap-6 flex-1">
-        <ScrollArea className="max-h-[45vh] w-full px-1">
-          {messages.length === 0 ? (
-            <div className="text-center text-muted-foreground py-6">
-              Start by asking a question or tap a suggestion below.
-            </div>
-          ) : (
+      <div
+        className={`w-full max-w-3xl flex flex-col ${hasMessages ? "gap-4 flex-1 mt-4" : "gap-6 -mt-6"}`}
+      >
+        <ScrollArea className={`${hasMessages ? "flex-1 min-h-0" : "max-h-[45vh]"} w-full px-1`}>
+          {hasMessages ? (
             <div className="space-y-4">
               {messages.map((msg, i) => (
                 <div key={i} className="flex w-full">
@@ -174,19 +171,17 @@ export default function Chatbot() {
                 </div>
               )}
             </div>
-          )}
+          ) : null}
         </ScrollArea>
 
-        <div className="h-px w-full bg-[#eef0f5]" />
-
-        <div className="relative">
+        <div className="relative sticky bottom-0 pb-2 bg-gradient-to-t from-background to-background/60">
           <Input
             placeholder="Ask a customer service question..."
             value={userInput}
             onChange={(e) => setInputValue(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
             disabled={isLoading}
-            className="w-full h-14 pr-14 rounded-full border border-[#e7e9f3] bg-white shadow-sm text-base"
+            className="w-full h-14 pr-14 pl-6 rounded-full border border-[#e7e9f3] bg-white shadow-sm text-base focus:ring-0 focus-visible:ring-0 focus:outline-none focus-visible:outline-none focus:border-[#e7e9f3] focus-visible:border-[#e7e9f3]"
           />
           <button
             type="button"
@@ -211,18 +206,19 @@ export default function Chatbot() {
             </svg>
           </button>
         </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-          {sampleResponses.map((sample, idx) => (
-            <button
-              key={idx}
-              onClick={() => setInputValue(sample.query)}
-              className="w-full text-left px-4 py-3 rounded-xl border border-[#e7e9f3] bg-white shadow-xs text-sm md:text-base font-medium text-foreground hover:border-[#7A06FF] hover:shadow-sm transition"
-            >
-              {sample.query}
-            </button>
-          ))}
-        </div>
+        {!hasMessages && (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            {sampleResponses.map((sample, idx) => (
+              <button
+                key={idx}
+                onClick={() => setInputValue(sample.query)}
+                className="w-full text-left px-4 py-3 rounded-xl border border-[#e7e9f3] bg-white shadow-xs text-sm md:text-base font-medium text-foreground hover:border-[#7A06FF] hover:shadow-sm transition"
+              >
+                {sample.query}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
