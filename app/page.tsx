@@ -8,6 +8,7 @@ import About from '@/app/components/about';
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState('chatbot');
+  const [chatSession, setChatSession] = useState(0);
 
   const icons = useMemo(
     () => ({
@@ -50,7 +51,12 @@ export default function Dashboard() {
             {navigationItems.map((item) => (
               <button
                 key={item.id}
-                onClick={() => setActiveTab(item.id)}
+                onClick={() => {
+                  setActiveTab(item.id);
+                  if (item.id === 'chatbot') {
+                    setChatSession((prev) => prev + 1);
+                  }
+                }}
                 className={`w-full flex items-center gap-3 text-left px-4 py-3 rounded-lg transition-colors duration-150 ${
                   activeTab === item.id
                     ? 'bg-[#e6edf8] text-[#0f172a] font-semibold'
@@ -76,7 +82,7 @@ export default function Dashboard() {
       {/* Main Content Area */}
       <main className="flex-1 overflow-hidden">
         <div className="h-full overflow-auto">
-          {activeTab === 'chatbot' && <Chatbot />}
+          {activeTab === 'chatbot' && <Chatbot key={chatSession} />}
           {activeTab === 'about' && <About />}
         </div>
       </main>
