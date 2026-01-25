@@ -114,7 +114,7 @@ export default function Chatbot() {
   return (
     <div
       className={`min-h-screen flex flex-col items-center bg-gradient-to-br from-background to-background/80 p-8 ${
-        hasMessages ? "justify-between border border-[#d1d5dc] shadow-md" : "justify-center"
+        hasMessages ? "justify-center border border-[#d1d5dc] shadow-md" : "justify-center"
       }`}
     >
       {/* Greeting Section */}
@@ -129,95 +129,132 @@ export default function Chatbot() {
       )}
 
       {/* Chat Area */}
-      <div
-        className={`w-full max-w-3xl flex flex-col ${hasMessages ? "gap-4 flex-1 mt-4" : "gap-6 -mt-6"}`}
-      >
-        <ScrollArea className={`${hasMessages ? "flex-1 min-h-0" : "max-h-[45vh]"} w-full px-1`}>
-          {hasMessages ? (
-            <div className="space-y-4">
-              {messages.map((msg, i) => (
-                <div key={i} className="flex w-full">
-                  <div
-                    className={`max-w-[75%] px-4 py-3 rounded-2xl text-sm shadow-sm ${
-                      msg.type === "user"
-                        ? "ml-auto bg-[#f4edff] text-[#0f172a]"
-                        : "mr-auto bg-white text-[#0f172a] border border-[#eef0f5]"
-                    }`}
-                  >
-                    <p className="font-semibold mb-1">
-                      {msg.type === "user" ? "You" : "Bot"}
-                    </p>
-                    <p className="leading-relaxed">{msg.text}</p>
-                    {msg.type === "bot" && msg.reasoning?.length ? (
-                      <details className="mt-2 text-[13px] text-muted-foreground">
-                        <summary className="cursor-pointer">Reasoning</summary>
-                        <ul className="list-disc ml-5 space-y-1">
-                          {msg.reasoning.map((r, idx) => (
-                            <li key={idx}>{r}</li>
-                          ))}
-                        </ul>
-                      </details>
-                    ) : null}
+      <div className={`w-full max-w-3xl flex flex-col ${hasMessages ? "mt-1" : "gap-6 -mt-6"}`}>
+        {hasMessages ? (
+          <div className="relative flex flex-col h-[94vh] md:h-[92vh] rounded-2xl bg-transparent border border-transparent shadow-none overflow-hidden">
+            <ScrollArea className="flex-1 overflow-hidden">
+              <div className="px-3 py-4 pb-24 space-y-4">
+                {messages.map((msg, i) => (
+                  <div key={i} className="flex w-full">
+                    <div
+                      className={`max-w-[75%] px-4 py-3 rounded-2xl text-sm shadow-sm ${
+                        msg.type === "user"
+                          ? "ml-auto bg-[#f4edff] text-[#0f172a]"
+                          : "mr-auto bg-white text-[#0f172a] border border-[#eef0f5]"
+                      }`}
+                    >
+                      <p className="font-semibold mb-1">
+                        {msg.type === "user" ? "You" : "Bot"}
+                      </p>
+                      <p className="leading-relaxed">{msg.text}</p>
+                      {msg.type === "bot" && msg.reasoning?.length ? (
+                        <details className="mt-2 text-[13px] text-muted-foreground">
+                          <summary className="cursor-pointer">Reasoning</summary>
+                          <ul className="list-disc ml-5 space-y-1">
+                            {msg.reasoning.map((r, idx) => (
+                              <li key={idx}>{r}</li>
+                            ))}
+                          </ul>
+                        </details>
+                      ) : null}
+                    </div>
                   </div>
-                </div>
-              ))}
-              {isLoading && (
-                <div className="flex w-full">
-                  <div className="mr-auto px-4 py-3 rounded-2xl bg-white border border-[#eef0f5] text-sm text-muted-foreground shadow-sm flex gap-2 items-center">
-                    <span className="w-2 h-2 bg-[#7A06FF] rounded-full animate-bounce" />
-                    <span className="w-2 h-2 bg-[#7A06FF] rounded-full animate-bounce delay-100" />
-                    <span className="w-2 h-2 bg-[#7A06FF] rounded-full animate-bounce delay-200" />
+                ))}
+                {isLoading && (
+                  <div className="flex w-full">
+                    <div className="mr-auto px-4 py-3 rounded-2xl bg-white border border-[#eef0f5] text-sm text-muted-foreground shadow-sm flex gap-2 items-center">
+                      <span className="w-2 h-2 bg-[#7A06FF] rounded-full animate-bounce" />
+                      <span className="w-2 h-2 bg-[#7A06FF] rounded-full animate-bounce delay-100" />
+                      <span className="w-2 h-2 bg-[#7A06FF] rounded-full animate-bounce delay-200" />
+                    </div>
                   </div>
-                </div>
-              )}
-            </div>
-          ) : null}
-        </ScrollArea>
+                )}
+              </div>
+            </ScrollArea>
 
-        <div className="relative sticky bottom-0 pb-2 bg-gradient-to-t from-background to-background/60">
-          <Input
-            placeholder="Ask a customer service question..."
-            value={userInput}
-            onChange={(e) => setInputValue(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
-            disabled={isLoading}
-            className="w-full h-14 pr-14 pl-6 rounded-full border border-[#e7e9f3] bg-white shadow-sm text-base focus:ring-0 focus-visible:ring-0 focus:outline-none focus-visible:outline-none focus:border-[#e7e9f3] focus-visible:border-[#e7e9f3]"
-          />
-          <button
-            type="button"
-            onClick={handleSendMessage}
-            disabled={isLoading || !userInput.trim()}
-            className="absolute right-2 top-1/2 -translate-y-1/2 p-3 rounded-full text-[#7A06FF] hover:bg-[#f4edff] border border-transparent transition-colors disabled:opacity-50"
-            aria-label="Send message"
-          >
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden
-            >
-              <line x1="22" y1="2" x2="11" y2="13" />
-              <polygon points="22 2 15 22 11 13 2 9 22 2" />
-            </svg>
-          </button>
-        </div>
-        {!hasMessages && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            {sampleResponses.map((sample, idx) => (
-              <button
-                key={idx}
-                onClick={() => setInputValue(sample.query)}
-                className="w-full text-left px-4 py-3 rounded-xl border border-[#e7e9f3] bg-white shadow-xs text-sm md:text-base font-medium text-foreground hover:border-[#7A06FF] hover:shadow-sm transition"
-              >
-                {sample.query}
-              </button>
-            ))}
+            <div className="absolute inset-x-0 bottom-0 px-3 pb-3 pt-4 bg-gradient-to-t from-background to-transparent">
+              <div className="relative">
+                <Input
+                  placeholder="Ask a customer service question..."
+                  value={userInput}
+                  onChange={(e) => setInputValue(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
+                  disabled={isLoading}
+                  className="w-full h-14 pr-14 pl-6 rounded-full border border-[#e7e9f3] bg-white shadow-sm text-base focus:ring-0 focus-visible:ring-0 focus:outline-none focus-visible:outline-none focus:border-[#e7e9f3] focus-visible:border-[#e7e9f3]"
+                />
+                <button
+                  type="button"
+                  onClick={handleSendMessage}
+                  disabled={isLoading || !userInput.trim()}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 p-3 rounded-full text-[#7A06FF] hover:bg-[#f4edff] border border-transparent transition-colors disabled:opacity-50"
+                  aria-label="Send message"
+                >
+                  <svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden
+                  >
+                    <line x1="22" y1="2" x2="11" y2="13" />
+                    <polygon points="22 2 15 22 11 13 2 9 22 2" />
+                  </svg>
+                </button>
+              </div>
+            </div>
           </div>
+        ) : (
+          <>
+            <ScrollArea className="max-h-[45vh] w-full px-1">{null}</ScrollArea>
+
+            <div className="relative sticky bottom-0 pb-2 bg-gradient-to-t from-background to-background/60">
+              <Input
+                placeholder="Ask a customer service question..."
+                value={userInput}
+                onChange={(e) => setInputValue(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
+                disabled={isLoading}
+                className="w-full h-14 pr-14 pl-6 rounded-full border border-[#e7e9f3] bg-white shadow-sm text-base focus:ring-0 focus-visible:ring-0 focus:outline-none focus-visible:outline-none focus:border-[#e7e9f3] focus-visible:border-[#e7e9f3]"
+              />
+              <button
+                type="button"
+                onClick={handleSendMessage}
+                disabled={isLoading || !userInput.trim()}
+                className="absolute right-2 top-1/2 -translate-y-1/2 p-3 rounded-full text-[#7A06FF] hover:bg-[#f4edff] border border-transparent transition-colors disabled:opacity-50"
+                aria-label="Send message"
+              >
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden
+                >
+                  <line x1="22" y1="2" x2="11" y2="13" />
+                  <polygon points="22 2 15 22 11 13 2 9 22 2" />
+                </svg>
+              </button>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              {sampleResponses.map((sample, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setInputValue(sample.query)}
+                  className="w-full text-left px-4 py-3 rounded-xl border border-[#e7e9f3] bg-white shadow-xs text-sm md:text-base font-medium text-foreground hover:border-[#7A06FF] hover:shadow-sm transition"
+                >
+                  {sample.query}
+                </button>
+              ))}
+            </div>
+          </>
         )}
       </div>
     </div>
