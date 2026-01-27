@@ -3,6 +3,15 @@ from datetime import datetime
 from knowledge_base import get_products, get_orders, get_policies
 from nlu import ParsedQuery
 
+
+def _find_latest_order_by_product(product_id: str):
+    orders = get_orders()
+    pid = product_id.upper()
+    candidates = [o for o in orders if o.get("product_id", "").upper() == pid]
+    if not candidates:
+        return None
+    return max(candidates, key=lambda o: datetime.strptime(o["order_date"], "%Y-%m-%d"))
+
 def reason_query(parsed: ParsedQuery):
     reasoning = []
 
@@ -14,11 +23,20 @@ def reason_query(parsed: ParsedQuery):
 
     if intent == "check_order_status":
         orders = get_orders()
-        order = next((o for o in orders if o["order_id"].lower() == entities["order_id"].lower()), None)
+        order = None
+        if entities.get("order_id"):
+            order = next((o for o in orders if o["order_id"].lower() == entities["order_id"].lower()), None)
+            if order:
+                reasoning.append(f"Lookup by order_id: {order['order_id']} status is {order['status']}")
+        if not order and entities.get("product_id"):
+            order = _find_latest_order_by_product(entities["product_id"])
+            if order:
+                reasoning.append(
+                    f"Lookup by product_id: chose most recent order {order['order_id']} for product {order['product_id']}"
+                )
         if not order:
             reasoning.append("Order not found in database")
-            return {"answer": "I couldn't find that order. Double-check the order ID.", "reasoning": reasoning}
-        reasoning.append(f"Lookup: order {order['order_id']} status is {order['status']}")
+            return {"answer": "I couldn't find that order. Double-check the order ID or product.", "reasoning": reasoning}
         return {
             "answer": f"Order {order['order_id']} is currently {order['status']}. We'll keep you posted on updates.",
             "reasoning": reasoning,
@@ -26,10 +44,23 @@ def reason_query(parsed: ParsedQuery):
 
     elif intent == "return_product":
         orders = get_orders()
-        order = next((o for o in orders if o["order_id"].lower() == entities["order_id"].lower()), None)
+        order = None
+        if entities.get("order_id"):
+            order = next((o for o in orders if o["order_id"].lower() == entities["order_id"].lower()), None)
+            if order:
+                reasoning.append(f"Lookup by order_id: found order {order['order_id']}")
+        if not order and entities.get("product_id"):
+            order = _find_latest_order_by_product(entities["product_id"])
+            if order:
+                reasoning.append(
+                    f"Lookup by product_id: chose most recent order {order['order_id']} for product {order['product_id']}"
+                )
         if not order:
             reasoning.append("Order not found in database")
-            return {"answer": "I couldn't find that order. Please verify the order ID.", "reasoning": reasoning}
+            return {
+                "answer": "I couldn't find that order. Please verify the order ID or tell me the product and order number.",
+                "reasoning": reasoning,
+            }
 
         products = get_products()
         product = next((p for p in products if p["product_id"] == order["product_id"]), None)
