@@ -45,7 +45,7 @@ export default function Chatbot() {
       reasoning: [],
     },
     {
-      query: "Warranty on Laptop Bag?",
+      query: "What's the warranty on Laptop Bag?",
       response: "",
       reasoning: [],
     },

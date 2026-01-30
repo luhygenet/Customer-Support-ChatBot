@@ -162,9 +162,10 @@ def reason_query(parsed: ParsedQuery):
             "reasoning": reasoning,
         }
 
-    elif intent in {"return_policy_info", "shipping_info", "cancellation_info", "digital_goods_policy"}:
+    elif intent in {"return_policy_info", "warranty_policy_info", "shipping_info", "cancellation_info", "digital_goods_policy"}:
         policy_id_map = {
             "return_policy_info": "return_policy",
+            "warranty_policy_info": "warranty_policy",
             "shipping_info": "shipping_policy",
             "cancellation_info": "cancellation_policy",
             "digital_goods_policy": "digital_goods_policy",

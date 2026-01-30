@@ -31,6 +31,7 @@ SUPPORTED_INTENTS = {
     "check_order_status",
     "return_product",
     "warranty_info",
+    "warranty_policy_info",
     "return_policy_info",
     "shipping_info",
     "cancellation_info",
@@ -99,6 +100,8 @@ def _get_intent_client() -> genai.Client:
 
 def infer_intent_fallback(text: str) -> Optional[str]:
     t = text.lower()
+    if "warranty policy" in t:
+        return "warranty_policy_info"
     if "return" in t or "refund" in t:
         return "return_product"
     if "track" in t or "status" in t or "where is" in t:
@@ -123,13 +126,13 @@ def infer_general_intent(text: str) -> Optional[str]:
     thanks = ["thank", "thanks", "thx"]
 
     for word in greetings:
-        if word in t:
+        if re.search(rf"\b{re.escape(word)}\b", t):
             return "greeting"
     for word in farewells:
-        if word in t:
+        if re.search(rf"\b{re.escape(word)}\b", t):
             return "farewell"
     for word in thanks:
-        if word in t:
+        if re.search(rf"\b{re.escape(word)}\b", t):
             return "thanks"
     return None
 
@@ -142,8 +145,8 @@ def infer_intent_transformer(text: str) -> Tuple[Optional[str], str]:
     prompt = (
         "You are an intent classifier for a customer support chatbot. "
         "Your task is to classify the user's message into one of these intents: "
-        "check_order_status, return_product, warranty_info, return_policy_info, "
-        "shipping_info, cancellation_info, digital_goods_policy, unknown. "
+        "check_order_status, return_product, warranty_info, warranty_policy_info, "
+        "return_policy_info, shipping_info, cancellation_info, digital_goods_policy, unknown. "
         "You MUST return ONLY a single valid JSON object with exactly two keys: "
         "'intent' and 'confidence'. Confidence is a number between 0 and 1. "
         "Do NOT include explanations, greetings, examples, or any other text. "
