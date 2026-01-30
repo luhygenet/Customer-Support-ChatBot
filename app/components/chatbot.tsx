@@ -36,36 +36,18 @@ export default function Chatbot() {
   const sampleResponses = [
     {
       query: "What is your return policy?",
-      response:
-        "Our return policy allows returns within 30 days of purchase with original receipt and product in original condition. Refunds are processed within 5-7 business days.",
-      reasoning: [
-        "Applied Rule 1: Customer Return Policy",
-        "Checked Policy Database: 30-day return window",
-        "Verified: Original condition requirement",
-        "Applied Policy: Refund processing timeline",
-      ],
+      response: "",
+      reasoning: [],
     },
     {
-      query: "How do I track my order?",
-      response:
-        "You can track your order using the tracking number sent to your email after shipment. Visit our tracking portal and enter your tracking number to see real-time updates.",
-      reasoning: [
-        "Applied Rule 2: Order Tracking Policy",
-        "Retrieved: Customer email record",
-        "Accessed: Tracking number from order database",
-        "Applied Action: Direct to tracking portal",
-      ],
+      query: "Order O126's status?",
+      response: "",
+      reasoning: [],
     },
     {
-      query: "Can I change my order after placing it?",
-      response:
-        "Order modifications are possible only within 1 hour of placement if the order has not yet been processed. Please contact support immediately with your order number.",
-      reasoning: [
-        "Applied Rule 3: Order Modification Policy",
-        "Checked: Order processing status",
-        "Verified: Time window constraint (1 hour)",
-        "Applied Action: Direct to support for assistance",
-      ],
+      query: "Warranty on Laptop Bag?",
+      response: "",
+      reasoning: [],
     },
   ];
 
