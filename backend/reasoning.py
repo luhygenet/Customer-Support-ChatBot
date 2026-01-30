@@ -24,6 +24,13 @@ def reason_query(parsed: ParsedQuery):
     intent = parsed.intent
     entities = parsed.entities
 
+    if intent == "greeting":
+        return {"answer": "Hello! How can I help you today?", "reasoning": reasoning}
+    if intent == "farewell":
+        return {"answer": "Goodbye! Have a great day!", "reasoning": reasoning}
+    if intent == "thanks":
+        return {"answer": "You're welcome!", "reasoning": reasoning}
+
     if intent == "check_order_status":
         orders = get_orders()
         order = None

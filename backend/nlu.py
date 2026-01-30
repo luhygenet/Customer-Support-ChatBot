@@ -114,6 +114,24 @@ def infer_intent_fallback(text: str) -> Optional[str]:
         return "return_policy_info"
     return None
 
+
+def infer_general_intent(text: str) -> Optional[str]:
+    t = text.lower()
+    greetings = ["hi", "hello", "good morning", "good afternoon", "good evening", "hey"]
+    farewells = ["bye", "goodbye", "see you"]
+    thanks = ["thank", "thanks", "thx"]
+
+    for word in greetings:
+        if word in t:
+            return "greeting"
+    for word in farewells:
+        if word in t:
+            return "farewell"
+    for word in thanks:
+        if word in t:
+            return "thanks"
+    return None
+
 def infer_intent_transformer(text: str) -> Tuple[Optional[str], str]:
     client = _get_intent_client()
 
@@ -167,6 +185,10 @@ def infer_intent_transformer(text: str) -> Tuple[Optional[str], str]:
 
 
 def parse_query(query: str) -> Optional[ParsedQuery]:
+    general_intent = infer_general_intent(query)
+    if general_intent:
+        return ParsedQuery(general_intent, {}, [f"Intent: {general_intent}"])
+
     nlp = get_nlp()
     doc = nlp(query)
 
@@ -195,18 +217,17 @@ def parse_query(query: str) -> Optional[ParsedQuery]:
     intent: Optional[str] = None
     try:
         intent, transformer_debug = infer_intent_transformer(query)
-        trace.append(f"Intent (Transformer): {intent or 'none'}")
-        trace.append(f"Intent (Transformer Debug): {transformer_debug}")
+        print(f"Intent (Transformer Debug): {transformer_debug}")
     except RuntimeError as exc:
-        trace.append(f"Intent (Transformer): unavailable ({exc})")
+        print(f"Intent (Transformer Error): {exc}")
 
     if not intent:
         intent = infer_intent_fallback(query)
-        if intent:
-            trace.append(f"Intent (Fallback): {intent}")
 
     if not intent:
         return None
+
+    trace.append(f"Intent: {intent}")
 
     # Fallback: regex for IDs if NER missed them
     if "order_id" not in entities:
@@ -219,8 +240,8 @@ def parse_query(query: str) -> Optional[ParsedQuery]:
             entities["product_id"] = m.group(0).upper()
 
     if entities:
-        trace.append("Entities (CRF): " + ", ".join(f"{k}={v}" for k, v in entities.items()))
+        trace.append("Entities: " + ", ".join(f"{k}={v}" for k, v in entities.items()))
     else:
-        trace.append("Entities (CRF): none")
+        trace.append("Entities: none")
 
     return ParsedQuery(intent, entities, trace)
