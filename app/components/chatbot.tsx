@@ -143,9 +143,6 @@ export default function Chatbot() {
                           : "mr-auto bg-white text-[#0f172a] border border-[#eef0f5]"
                       }`}
                     >
-                      <p className="font-semibold mb-1">
-                        {msg.type === "user" ? "You" : "Bot"}
-                      </p>
                       <p className="leading-relaxed">{msg.text}</p>
                       {msg.type === "bot" && msg.reasoning?.length ? (
                         <details className="mt-2 text-[13px] text-muted-foreground">

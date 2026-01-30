@@ -15,6 +15,9 @@ def _find_latest_order_by_product(product_id: str):
 def reason_query(parsed: ParsedQuery):
     reasoning = []
 
+    if parsed and getattr(parsed, "trace", None):
+        reasoning.extend(parsed.trace)
+
     if not parsed:
         return {"answer": "Sorry, I could not understand your query.", "reasoning": reasoning}
 
@@ -115,6 +118,13 @@ def reason_query(parsed: ParsedQuery):
 
     elif intent == "warranty_info":
         products = get_products()
+        if not entities.get("product_id"):
+            reasoning.append("Missing product_id for warranty lookup")
+            return {
+                "answer": "Please provide the product name or product ID to check warranty coverage.",
+                "reasoning": reasoning,
+            }
+
         product = next((p for p in products if p["product_id"].lower() == entities["product_id"].lower()), None)
         if not product:
             reasoning.append("Product not found")
@@ -130,6 +140,26 @@ def reason_query(parsed: ParsedQuery):
             }
         return {
             "answer": f"{product['name']} does not include warranty coverage.",
+            "reasoning": reasoning,
+        }
+
+    elif intent in {"return_policy_info", "shipping_info", "cancellation_info", "digital_goods_policy"}:
+        policy_id_map = {
+            "return_policy_info": "return_policy",
+            "shipping_info": "shipping_policy",
+            "cancellation_info": "cancellation_policy",
+            "digital_goods_policy": "digital_goods_policy",
+        }
+        policy_id = policy_id_map[intent]
+        policies = get_policies()
+        policy = next((p for p in policies if p.get("policy_id") == policy_id), None)
+        if not policy:
+            reasoning.append(f"Policy not found: {policy_id}")
+            return {"answer": "I couldn't find that policy information.", "reasoning": reasoning}
+
+        reasoning.append(f"Policy: {policy.get('description', 'No description available.')}")
+        return {
+            "answer": policy.get("description", "I couldn't find that policy information."),
             "reasoning": reasoning,
         }
 

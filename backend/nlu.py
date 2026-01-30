@@ -1,10 +1,14 @@
 # app/nlu.py
 from __future__ import annotations
 
+import json
+import os
 import re
 from functools import lru_cache
-from typing import Dict, Optional
+from typing import Dict, List, Optional, Tuple
 
+from dotenv import load_dotenv
+from google import genai
 import spacy
 from spacy.language import Language
 from spacy.pipeline import EntityRuler
@@ -13,12 +17,24 @@ from knowledge_base import get_products
 
 
 class ParsedQuery:
-    def __init__(self, intent: str, entities: Dict[str, str]):
+    def __init__(self, intent: str, entities: Dict[str, str], trace: Optional[List[str]] = None):
         self.intent = intent
         self.entities = entities
+        self.trace = trace or []
 
+
+load_dotenv()
 
 NAME_TO_ID: Dict[str, str] = {}
+SUPPORTED_INTENTS = {
+    "check_order_status",
+    "return_product",
+    "warranty_info",
+    "return_policy_info",
+    "shipping_info",
+    "cancellation_info",
+    "digital_goods_policy",
+}
 
 
 def _build_name_gazetteer() -> Dict[str, str]:
@@ -53,6 +69,8 @@ def get_nlp() -> Language:
     # Entity patterns
     patterns = [
         {"label": "ORDER_ID", "pattern": [{"TEXT": {"REGEX": r"o\d+"}}]},
+        {"label": "ORDER_ID", "pattern": [{"TEXT": {"REGEX": r"ord-?\d+"}}]},
+        {"label": "ORDER_ID", "pattern": [{"TEXT": {"REGEX": r"order-?\d+"}}]},
         {"label": "PRODUCT_ID", "pattern": [{"TEXT": {"REGEX": r"p\d+"}}]},
         {"label": "POLICY", "pattern": [{"LOWER": {"IN": ["return", "warranty", "shipping", "cancellation"]}}]},
     ]
@@ -70,15 +88,82 @@ def get_nlp() -> Language:
     return nlp
 
 
-def infer_intent(text: str) -> Optional[str]:
+@lru_cache(maxsize=1)
+def _get_intent_client() -> genai.Client:
+    api_key = os.getenv("GEMINI_API_KEY")
+    if not api_key:
+        raise RuntimeError("GEMINI_API_KEY is not set. Add it to .env to enable intent detection.")
+    return genai.Client(api_key=api_key)
+
+
+def infer_intent_fallback(text: str) -> Optional[str]:
     t = text.lower()
-    if "return" in t:
+    if "return" in t or "refund" in t:
         return "return_product"
-    if "track" in t or "status" in t:
+    if "track" in t or "status" in t or "where is" in t:
         return "check_order_status"
     if "warranty" in t:
         return "warranty_info"
+    if "shipping" in t or "delivery" in t:
+        return "shipping_info"
+    if "cancel" in t or "cancellation" in t:
+        return "cancellation_info"
+    if "digital" in t or "software" in t or "license" in t:
+        return "digital_goods_policy"
+    if "return policy" in t or "refund policy" in t:
+        return "return_policy_info"
     return None
+
+def infer_intent_transformer(text: str) -> Tuple[Optional[str], str]:
+    client = _get_intent_client()
+
+    # Hardcode the model you want to use
+    model_name = "gemini-2.5-flash"
+
+    prompt = (
+        "You are an intent classifier for a customer support chatbot. "
+        "Your task is to classify the user's message into one of these intents: "
+        "check_order_status, return_product, warranty_info, return_policy_info, "
+        "shipping_info, cancellation_info, digital_goods_policy, unknown. "
+        "You MUST return ONLY a single valid JSON object with exactly two keys: "
+        "'intent' and 'confidence'. Confidence is a number between 0 and 1. "
+        "Do NOT include explanations, greetings, examples, or any other text. "
+        "Output MUST be parseable as JSON. "
+        "Example output: {\"intent\": \"return_product\", \"confidence\": 0.95} "
+        f"Message: {text}"
+    )
+
+    try:
+        response = client.models.generate_content(
+            model=model_name,
+            contents=prompt,
+            config={
+                "temperature": 0,
+                "max_output_tokens": 100,
+                "response_mime_type": "application/json",
+            },
+        )
+    except Exception as exc:
+        return None, f"error: {exc}"
+
+    raw = getattr(response, "text", "") or ""
+    raw = re.sub(r"^```(json)?|```$", "", raw.strip(), flags=re.IGNORECASE)
+
+    # Extract first JSON object
+    json_match = re.search(r"\{.*?\}", raw, flags=re.DOTALL)
+    if not json_match:
+        return None, f"model={model_name} non-json response: {raw}"
+
+    try:
+        data = json.loads(json_match.group(0))
+        intent = data.get("intent")
+        if intent in SUPPORTED_INTENTS:
+            return intent, f"model={model_name} raw: {json_match.group(0)}"
+        if intent in {"refund_request", "return_request"}:
+            return "return_product", f"model={model_name} raw: {json_match.group(0)}"
+        return "unknown", f"model={model_name} raw: {json_match.group(0)}"
+    except json.JSONDecodeError:
+        return None, f"model={model_name} invalid json: {json_match.group(0)}"
 
 
 def parse_query(query: str) -> Optional[ParsedQuery]:
@@ -88,7 +173,7 @@ def parse_query(query: str) -> Optional[ParsedQuery]:
     entities: Dict[str, str] = {}
     for ent in doc.ents:
         if ent.label_ == "ORDER_ID":
-            entities["order_id"] = ent.text.upper()
+            entities["order_id"] = ent.text.upper().replace(" ", "")
         elif ent.label_ == "PRODUCT_ID":
             entities["product_id"] = ent.text.upper()
         elif ent.label_ == "PRODUCT_NAME":
@@ -96,14 +181,36 @@ def parse_query(query: str) -> Optional[ParsedQuery]:
             if product_id:
                 entities["product_id"] = product_id
 
-    intent = infer_intent(query)
+    if "product_id" not in entities:
+        query_lower = query.lower()
+        best_match = None
+        for name, pid in NAME_TO_ID.items():
+            if re.search(rf"\b{re.escape(name)}\b", query_lower):
+                if not best_match or len(name) > len(best_match[0]):
+                    best_match = (name, pid)
+        if best_match:
+            entities["product_id"] = best_match[1]
+
+    trace: List[str] = []
+    intent: Optional[str] = None
+    try:
+        intent, transformer_debug = infer_intent_transformer(query)
+        trace.append(f"Intent (Transformer): {intent or 'none'}")
+        trace.append(f"Intent (Transformer Debug): {transformer_debug}")
+    except RuntimeError as exc:
+        trace.append(f"Intent (Transformer): unavailable ({exc})")
+
+    if not intent:
+        intent = infer_intent_fallback(query)
+        if intent:
+            trace.append(f"Intent (Fallback): {intent}")
 
     if not intent:
         return None
 
     # Fallback: regex for IDs if NER missed them
     if "order_id" not in entities:
-        m = re.search(r"o\d+", query, re.IGNORECASE)
+        m = re.search(r"(o\d+|ord-?\d+|order-?\d+)", query, re.IGNORECASE)
         if m:
             entities["order_id"] = m.group(0).upper()
     if "product_id" not in entities:
@@ -111,4 +218,9 @@ def parse_query(query: str) -> Optional[ParsedQuery]:
         if m:
             entities["product_id"] = m.group(0).upper()
 
-    return ParsedQuery(intent, entities)
+    if entities:
+        trace.append("Entities (CRF): " + ", ".join(f"{k}={v}" for k, v in entities.items()))
+    else:
+        trace.append("Entities (CRF): none")
+
+    return ParsedQuery(intent, entities, trace)

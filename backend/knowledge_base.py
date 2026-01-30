@@ -32,5 +32,3 @@ def get_policies() -> List[Dict[str, Any]]:
     return knowledge_base().get("policies", [])
 
 
-def get_customers() -> List[Dict[str, Any]]:
-    return knowledge_base().get("customers", [])

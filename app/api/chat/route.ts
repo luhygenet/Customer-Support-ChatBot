@@ -21,7 +21,7 @@ export async function GET(req: NextRequest) {
 	} catch (error) {
 		console.error("Proxy GET /api/chat error:", error);
 		return NextResponse.json(
-			{ answer: "Upstream error.", reasoning: [] },
+			{ answer: "Service temporarily unavailable. Please try again shortly.", reasoning: [] },
 			{ status: 502 },
 		);
 	}
@@ -48,7 +48,7 @@ export async function POST(req: NextRequest) {
 	} catch (error) {
 		console.error("Proxy POST /api/chat error:", error);
 		return NextResponse.json(
-			{ answer: "Upstream error.", reasoning: [] },
+			{ answer: "Service temporarily unavailable. Please try again shortly.", reasoning: [] },
 			{ status: 502 },
 		);
 	}

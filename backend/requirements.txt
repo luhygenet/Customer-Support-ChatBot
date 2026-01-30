@@ -1,3 +1,5 @@
 fastapi
 uvicorn
 spacy
+google-genai
+python-dotenv
