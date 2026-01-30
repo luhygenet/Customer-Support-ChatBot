@@ -17,10 +17,11 @@ from knowledge_base import get_products
 
 
 class ParsedQuery:
-    def __init__(self, intent: str, entities: Dict[str, str], trace: Optional[List[str]] = None):
+    def __init__(self, intent: str, entities: Dict[str, str], trace: Optional[List[str]] = None, text: str = ""):
         self.intent = intent
         self.entities = entities
         self.trace = trace or []
+        self.text = text
 
 
 load_dotenv()
@@ -187,7 +188,7 @@ def infer_intent_transformer(text: str) -> Tuple[Optional[str], str]:
 def parse_query(query: str) -> Optional[ParsedQuery]:
     general_intent = infer_general_intent(query)
     if general_intent:
-        return ParsedQuery(general_intent, {}, [f"Intent: {general_intent}"])
+        return ParsedQuery(general_intent, {}, [f"Intent: {general_intent}"], text=query)
 
     nlp = get_nlp()
     doc = nlp(query)
@@ -244,4 +245,4 @@ def parse_query(query: str) -> Optional[ParsedQuery]:
     else:
         trace.append("Entities: none")
 
-    return ParsedQuery(intent, entities, trace)
+    return ParsedQuery(intent, entities, trace, text=query)

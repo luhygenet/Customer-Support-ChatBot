@@ -140,13 +140,25 @@ def reason_query(parsed: ParsedQuery):
         months = product.get("warranty_months", 0)
         reasoning.append(f"Warranty period: {months} months")
 
+        user_text = (parsed.text or "").strip().lower()
+        is_wh_question = user_text.startswith(
+            ("what", "which", "when", "where", "why", "how")
+        )
+
         if months > 0:
+            answer = f"{product['name']} includes a {months}-month warranty from the purchase date."
+            if not is_wh_question:
+                answer = f"Yes—{answer}"
             return {
-                "answer": f"Yes—{product['name']} includes a {months}-month warranty from the purchase date.",
+                "answer": answer,
                 "reasoning": reasoning,
             }
+
+        answer = f"{product['name']} does not include warranty coverage."
+        if not is_wh_question:
+            answer = f"No—{answer}"
         return {
-            "answer": f"{product['name']} does not include warranty coverage.",
+            "answer": answer,
             "reasoning": reasoning,
         }
 
