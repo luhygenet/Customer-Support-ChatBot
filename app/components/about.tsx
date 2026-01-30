@@ -6,31 +6,31 @@ export default function About() {
     {
       title: "Project Overview",
       content:
-        "This Customer Service Chatbot Agent is an advanced Machine Intelligence system designed to demonstrate rule-based reasoning and knowledge representation. The system processes customer inquiries, applies domain-specific policies, and provides transparent explanations of its decision-making process.",
+        "This Customer Service Chatbot Agent provides fast, policy-aware support for common customer questions. It combines intent detection, entity extraction, and rule-based reasoning over a structured knowledge base to deliver accurate, explainable answers.",
     },
     {
       title: "Objectives",
       items: [
-        "Demonstrate practical application of knowledge-based reasoning systems",
-        "Showcase rule-engine implementation in customer service domain",
-        "Provide transparent AI decision-making with explainable reasoning",
-        "Implement structured knowledge representation for business policies",
+        "Provide accurate answers using company policies and order data",
+        "Resolve common customer requests with clear, traceable reasoning",
+        "Extract key entities (order IDs, product names) from user queries",
+        "Keep the system modular for future policy and data updates",
       ],
     },
     {
       title: "Key Features",
       items: [
-        "Natural Language Understanding for customer queries",
-        "Rule-based reasoning engine with transparent logic paths",
-        "Structured knowledge base of policies and procedures",
-        "Real-time reasoning visualization and explanation",
-        "Scalable architecture for policy management",
+        "Hybrid NLU flow: LLM intent + spaCy entity extraction",
+        "Rule-based reasoning with transparent logic paths",
+        "Structured JSON knowledge base for products, orders, and policies",
+        "Reasoning trace available for each response",
+        "Extensible policy and data model",
       ],
     },
     {
-      title: "Academic Context",
+      title: "How It Works",
       content:
-        "This project applies fundamental concepts from Machine Intelligence and Knowledge-Based Systems. It demonstrates the practical implementation of knowledge representation, inference mechanisms, and rule-based reasoning engines. The system serves as an educational tool for understanding how AI systems can combine symbolic reasoning with structured data to solve domain-specific problems.",
+        "The system first detects the user’s intent with an LLM, then extracts entities like order IDs and product names using spaCy. It retrieves relevant facts from the JSON knowledge base and applies business rules to generate the final response with an explainable reasoning trail.",
     },
   ];
 
@@ -42,7 +42,7 @@ export default function About() {
             About This Project
           </h2>
           <p className="text-lg text-muted-foreground">
-            Customer Service Chatbot Agent with Reasoning
+            Customer Service Chatbot Agent
           </p>
         </div>
 
@@ -87,23 +87,19 @@ export default function About() {
                 </p>
               </div>
               <div>
-                <p className="font-semibold text-foreground mb-2">
-                  Core System
-                </p>
-                <p className="text-muted-foreground text-sm">
-                  Rule-based reasoning engine
-                </p>
+                <p className="font-semibold text-foreground mb-2">Backend</p>
+                <p className="text-muted-foreground text-sm">FastAPI (Python)</p>
               </div>
               <div>
                 <p className="font-semibold text-foreground mb-2">Data</p>
                 <p className="text-muted-foreground text-sm">
-                  Structured knowledge base
+                  JSON knowledge base (products, orders, policies)
                 </p>
               </div>
               <div>
                 <p className="font-semibold text-foreground mb-2">NLU</p>
                 <p className="text-muted-foreground text-sm">
-                  Natural Language Understanding
+                  LLM intent + spaCy entity extraction
                 </p>
               </div>
             </div>
