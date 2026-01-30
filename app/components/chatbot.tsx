@@ -2,9 +2,8 @@
 export const dynamic = "force-dynamic";
 export const fetchCache = "force-no-store"
 
-import React, { useState } from "react";
-import { Card } from "@/app/components/ui/card";
-import { Button } from "@/app/components/ui/button";
+import React, { useMemo, useState } from "react";
+import Image from "next/image";
 import { Input } from "@/app/components/ui/input";
 import { ScrollArea } from "@/app/components/ui/scroll-area";
 
@@ -25,54 +24,42 @@ export default function Chatbot() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [userInput, setInputValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const hasMessages = messages.length > 0;
+
+  const greeting = useMemo(() => {
+    const hour = new Date().getHours();
+    if (hour < 12) return "Good Morning";
+    if (hour < 18) return "Good Afternoon";
+    return "Good Evening";
+  }, []);
 
   const sampleResponses = [
     {
       query: "What is your return policy?",
-      response:
-        "Our return policy allows returns within 30 days of purchase with original receipt and product in original condition. Refunds are processed within 5-7 business days.",
-      reasoning: [
-        "Applied Rule 1: Customer Return Policy",
-        "Checked Policy Database: 30-day return window",
-        "Verified: Original condition requirement",
-        "Applied Policy: Refund processing timeline",
-      ],
+      response: "",
+      reasoning: [],
     },
     {
-      query: "How do I track my order?",
-      response:
-        "You can track your order using the tracking number sent to your email after shipment. Visit our tracking portal and enter your tracking number to see real-time updates.",
-      reasoning: [
-        "Applied Rule 2: Order Tracking Policy",
-        "Retrieved: Customer email record",
-        "Accessed: Tracking number from order database",
-        "Applied Action: Direct to tracking portal",
-      ],
+      query: "Order O126's status?",
+      response: "",
+      reasoning: [],
     },
     {
-      query: "Can I change my order after placing it?",
-      response:
-        "Order modifications are possible only within 1 hour of placement if the order has not yet been processed. Please contact support immediately with your order number.",
-      reasoning: [
-        "Applied Rule 3: Order Modification Policy",
-        "Checked: Order processing status",
-        "Verified: Time window constraint (1 hour)",
-        "Applied Action: Direct to support for assistance",
-      ],
+      query: "What's the warranty on Laptop Bag?",
+      response: "",
+      reasoning: [],
     },
   ];
 
   const handleSendMessage = async () => {
     if (!userInput.trim()) return;
 
-    // Add user message
     const userMessage: Message = {
       type: "user",
       text: userInput,
     };
     setMessages([...messages, userMessage]);
 
-    // Simulate system response
     setInputValue("");
     setIsLoading(true);
 
@@ -104,68 +91,45 @@ export default function Chatbot() {
     } finally {
       setIsLoading(false);
     }
-    // setTimeout(() => {
-    //   const randomResponse =
-    //     sampleResponses[Math.floor(Math.random() * sampleResponses.length)];
-    //   const systemMessage: Message = {
-    //     id: `msg-${Date.now() + 1}`,
-    //     type: "system",
-    //     response: randomResponse.response,
-    //     reasoning: randomResponse.reasoning,
-    //   };
-    //   setMessages((prev) => [...prev, systemMessage]);
-    //   setIsLoading(false);
-    // }, 800);
   };
-  const lastMessage = messages[messages.length - 1];
-  return (
-    <div className="h-full flex flex-col bg-gradient-to-br from-background to-background/80 p-8">
-      <div className="mb-6">
-        <h2 className="text-3xl font-bold text-primary mb-2">
-          Customer Support Bot
-        </h2>
-        <p className="text-muted-foreground">
-          Ask questions about orders, returns, policies, and more
-        </p>
-      </div>
 
-      <div className="flex-1 grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Chat Interface */}
-        <div className="lg:col-span-2 flex flex-col">
-          <Card className="flex-1 flex flex-col bg-card border-border shadow-md">
-            <ScrollArea className="flex-1 p-6">
-              <div className="space-y-4">
-                {messages.length === 0 ? (
-                  <div className="h-full flex items-center justify-center text-center">
-                    <div>
-                      <p className="text-muted-foreground text-lg mb-4">
-                        Start a conversation by asking a customer service
-                        question
-                      </p>
-                      <div className="grid grid-cols-1 gap-2 max-w-xs">
-                        {sampleResponses.map((sample, idx) => (
-                          <button
-                            key={idx}
-                            onClick={() => {
-                              setInputValue(sample.query);
-                            }}
-                            className="text-sm text-accent hover:text-accent/80 text-left p-3 rounded border border-border hover:border-accent transition-all"
-                          >
-                            "{sample.query}"
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  messages.map((msg, i) => (
-                    <div key={i} style={{ marginBottom: "0.75rem" }}>
-                      <strong>{msg.type === "user" ? "You" : "Bot"}:</strong>{" "}
-                      {msg.text}
+  return (
+    <div
+      className={`min-h-screen flex flex-col items-center bg-gradient-to-br from-background to-background/80 p-8 ${
+        hasMessages ? "justify-center border border-[#d1d5dc] shadow-md" : "justify-center"
+      }`}
+    >
+      {/* Greeting Section */}
+      {!hasMessages && (
+        <div className="text-center flex flex-col items-center gap-2 mb-6 -mt-6">
+          <h2 className="text-3xl md:text-4xl font-extrabold text-primary">{greeting}</h2>
+          <p className="text-3xl md:text-4xl font-semibold mt-1">
+            <span className="text-primary">How Can I </span>
+            <span className="text-[#7A06FF]">Assist You Today?</span>
+          </p>
+        </div>
+      )}
+
+      {/* Chat Area */}
+      <div className={`w-full max-w-3xl flex flex-col ${hasMessages ? "mt-1" : "gap-6 -mt-6"}`}>
+        {hasMessages ? (
+          <div className="relative flex flex-col h-[94vh] md:h-[92vh] rounded-2xl bg-transparent border border-transparent shadow-none overflow-hidden">
+            <ScrollArea className="flex-1 overflow-hidden">
+              <div className="px-3 py-4 pb-24 space-y-4">
+                {messages.map((msg, i) => (
+                  <div key={i} className="flex w-full">
+                    <div
+                      className={`max-w-[75%] px-4 py-3 rounded-2xl text-sm shadow-sm ${
+                        msg.type === "user"
+                          ? "ml-auto bg-[#f4edff] text-[#0f172a]"
+                          : "mr-auto bg-white text-[#0f172a] border border-[#eef0f5]"
+                      }`}
+                    >
+                      <p className="leading-relaxed">{msg.text}</p>
                       {msg.type === "bot" && msg.reasoning?.length ? (
-                        <details style={{ marginTop: "0.25rem" }}>
-                          <summary>Reasoning</summary>
-                          <ul>
+                        <details className="mt-2 text-[13px] text-muted-foreground">
+                          <summary className="cursor-pointer">Reasoning</summary>
+                          <ul className="list-disc ml-5 space-y-1">
                             {msg.reasoning.map((r, idx) => (
                               <li key={idx}>{r}</li>
                             ))}
@@ -173,84 +137,104 @@ export default function Chatbot() {
                         </details>
                       ) : null}
                     </div>
-                  ))
-                )}
+                  </div>
+                ))}
                 {isLoading && (
-                  <div className="flex justify-start">
-                    <div className="bg-secondary text-secondary-foreground p-4 rounded-lg border border-border">
-                      <div className="flex gap-2">
-                        <div className="w-2 h-2 bg-secondary-foreground rounded-full animate-bounce"></div>
-                        <div className="w-2 h-2 bg-secondary-foreground rounded-full animate-bounce delay-100"></div>
-                        <div className="w-2 h-2 bg-secondary-foreground rounded-full animate-bounce delay-200"></div>
-                      </div>
+                  <div className="flex w-full">
+                    <div className="mr-auto px-4 py-3 rounded-2xl bg-white border border-[#eef0f5] text-sm text-muted-foreground shadow-sm flex gap-2 items-center">
+                      <span className="w-2 h-2 bg-[#7A06FF] rounded-full animate-bounce" />
+                      <span className="w-2 h-2 bg-[#7A06FF] rounded-full animate-bounce delay-100" />
+                      <span className="w-2 h-2 bg-[#7A06FF] rounded-full animate-bounce delay-200" />
                     </div>
                   </div>
                 )}
               </div>
             </ScrollArea>
 
-            <div className="p-6 border-t border-border">
-              <div className="flex gap-2">
+            <div className="absolute inset-x-0 bottom-0 px-3 pb-3 pt-4 bg-gradient-to-t from-background to-transparent">
+              <div className="relative">
                 <Input
                   placeholder="Ask a customer service question..."
                   value={userInput}
                   onChange={(e) => setInputValue(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
                   disabled={isLoading}
-                  className="flex-1 bg-input text-foreground border-border"
+                  className="w-full h-14 pr-14 pl-6 rounded-full border border-[#e7e9f3] bg-white shadow-sm text-base focus:ring-0 focus-visible:ring-0 focus:outline-none focus-visible:outline-none focus:border-[#e7e9f3] focus-visible:border-[#e7e9f3]"
                 />
-                <Button
+                <button
+                  type="button"
                   onClick={handleSendMessage}
                   disabled={isLoading || !userInput.trim()}
-                  className="bg-accent text-accent-foreground hover:bg-accent/90"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 p-3 rounded-full text-[#7A06FF] hover:bg-[#f4edff] border border-transparent transition-colors disabled:opacity-50"
+                  aria-label="Send message"
                 >
-                  Send
-                </Button>
+                  <svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden
+                  >
+                    <line x1="22" y1="2" x2="11" y2="13" />
+                    <polygon points="22 2 15 22 11 13 2 9 22 2" />
+                  </svg>
+                </button>
               </div>
             </div>
-          </Card>
-        </div>
+          </div>
+        ) : (
+          <>
+            <ScrollArea className="max-h-[45vh] w-full px-1">{null}</ScrollArea>
 
-        {/* Reasoning Panel */}
-        <div className="flex flex-col">
-          <Card className="flex-1 bg-card border-border shadow-md overflow-hidden flex flex-col">
-            <div className="p-6 border-b border-border bg-secondary/10">
-              <h3 className="font-semibold text-primary">
-                Reasoning / Explanation
-              </h3>
-              <p className="text-xs text-muted-foreground mt-1">
-                System decision logic
-              </p>
+            <div className="relative sticky bottom-0 pb-3 pt-4 bg-gradient-to-t from-background to-transparent">
+              <Input
+                placeholder="Ask a customer service question..."
+                value={userInput}
+                onChange={(e) => setInputValue(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
+                disabled={isLoading}
+                className="w-full h-14 pr-14 pl-6 rounded-full border border-[#e7e9f3] bg-white shadow-sm text-base focus:ring-0 focus-visible:ring-0 focus:outline-none focus-visible:outline-none focus:border-[#e7e9f3] focus-visible:border-[#e7e9f3]"
+              />
+              <button
+                type="button"
+                onClick={handleSendMessage}
+                disabled={isLoading || !userInput.trim()}
+                className="absolute right-3 top-1/2 -translate-y-[45%] p-3 rounded-full text-[#7A06FF] hover:bg-[#f4edff] border border-transparent transition-colors disabled:opacity-50"
+                aria-label="Send message"
+              >
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden
+                >
+                  <line x1="22" y1="2" x2="11" y2="13" />
+                  <polygon points="22 2 15 22 11 13 2 9 22 2" />
+                </svg>
+              </button>
             </div>
-
-            <ScrollArea className="flex-1 p-6">
-              {messages.length === 0 ||
-              lastMessage.type !== "bot" ||
-              !lastMessage.reasoning ? (
-                <div className="text-center text-muted-foreground text-sm">
-                  <p>Send a message to see the reasoning process</p>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  <h4 className="font-semibold text-sm text-primary mb-4">
-                    Applied Rules & Logic:
-                  </h4>
-                  {lastMessage.reasoning?.map((rule, idx) => (
-                    <div
-                      key={idx}
-                      className="flex gap-3 pb-3 border-b border-border last:border-0"
-                    >
-                      <div className="flex-shrink-0 w-6 h-6 rounded-full bg-accent text-accent-foreground flex items-center justify-center text-xs font-bold">
-                        {idx + 1}
-                      </div>
-                      <p className="text-sm text-foreground flex-1">{rule}</p>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </ScrollArea>
-          </Card>
-        </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              {sampleResponses.map((sample, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setInputValue(sample.query)}
+                  className="w-full text-left px-4 py-3 rounded-xl border border-[#e7e9f3] bg-white shadow-xs text-sm md:text-base font-medium text-foreground hover:border-[#7A06FF] hover:shadow-sm transition"
+                >
+                  {sample.query}
+                </button>
+              ))}
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
