@@ -1,3 +1,5 @@
+import os
+
 from pydantic import BaseModel
 from nlu import parse_query
 from reasoning import reason_query
@@ -8,8 +10,12 @@ from fastapi.middleware.cors import CORSMiddleware
 app = FastAPI(title="Rule-Based Logic API")
 
 origins = [
-    "http://localhost:3000",  # Next.js frontend
+    "http://localhost:3000",  # Next.js frontend (local)
 ]
+
+frontend_url = os.getenv("FRONTEND_URL")
+if frontend_url:
+    origins.append(frontend_url)
 
 app.add_middleware(
     CORSMiddleware,

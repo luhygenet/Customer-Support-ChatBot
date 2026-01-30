@@ -2,7 +2,7 @@
 export const dynamic = "force-dynamic";
 export const fetchCache = "force-no-store"
 
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import { Input } from "@/app/components/ui/input";
 import { ScrollArea } from "@/app/components/ui/scroll-area";
@@ -25,6 +25,7 @@ export default function Chatbot() {
   const [userInput, setInputValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const hasMessages = messages.length > 0;
+  const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
   const greeting = useMemo(() => {
     const hour = new Date().getHours();
@@ -32,6 +33,10 @@ export default function Chatbot() {
     if (hour < 18) return "Good Afternoon";
     return "Good Evening";
   }, []);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+  }, [messages, isLoading]);
 
   const sampleResponses = [
     {
@@ -148,6 +153,7 @@ export default function Chatbot() {
                     </div>
                   </div>
                 )}
+                <div ref={messagesEndRef} />
               </div>
             </ScrollArea>
 
