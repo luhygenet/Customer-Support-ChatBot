@@ -99,7 +99,7 @@ def reason_query(parsed: ParsedQuery):
             return {
                 "answer": (
                     f"I can't create a return for order {order['order_id']} because this item isn't returnable. "
-                    f"Policy: {policy_text}"
+                    # f"Policy: {policy_text}"
                 ),
                 "reasoning": reasoning,
             }
@@ -109,7 +109,7 @@ def reason_query(parsed: ParsedQuery):
             return {
                 "answer": (
                     f"Yes, you can return order {order['order_id']}. It's returnable and within the 30-day return window. "
-                    f"Policy: {policy_text}"
+                    # f"Policy: {policy_text}"
                 ),
                 "reasoning": reasoning,
             }
@@ -118,7 +118,7 @@ def reason_query(parsed: ParsedQuery):
         return {
             "answer": (
                 f"I can't process a return for order {order['order_id']} because it's past the 30-day window. "
-                f"Policy: {policy_text}"
+                # f"Policy: {policy_text}"
             ),
             "reasoning": reasoning,
         }
